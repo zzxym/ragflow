@@ -33,7 +33,7 @@ services:
       retries: 120
     networks:
       - ragflow
-    restart: always
+    restart: on-failure
 
   infinity:
     container_name: ragflow-infinity
@@ -63,7 +63,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
-    restart: always
+    restart: on-failure
 
 
   mysql:
@@ -81,7 +81,6 @@ services:
       --default-authentication-plugin=mysql_native_password
       --tls_version="TLSv1.2,TLSv1.3"
       --init-file /data/application/init.sql
-      --binlog_expire_logs_seconds=604800
     ports:
       - ${MYSQL_PORT}:3306
     volumes:
@@ -94,7 +93,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 3
-    restart: always
+    restart: on-failure
 
   minio:
     image: quay.io/minio/minio:RELEASE.2023-12-20T01-00-02Z
@@ -112,7 +111,7 @@ services:
       - minio_data:/data
     networks:
       - ragflow
-    restart: always
+    restart: on-failure
 
   redis:
     # swr.cn-north-4.myhuaweicloud.com/ddn-k8s/docker.io/valkey/valkey:8
@@ -126,7 +125,7 @@ services:
       - redis_data:/data
     networks:
       - ragflow
-    restart: always
+    restart: on-failure
 
 
 
