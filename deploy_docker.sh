@@ -64,7 +64,7 @@ services:
 
   # -------------------- MinIO --------------------
   minio:
-    image: minio/minio:RELEASE.2023-10-10T17-10-42Z
+    image: minio/minio:latest  # 修改为最新版本
     environment:
       - MINIO_ROOT_USER=ragflow
       - MINIO_ROOT_PASSWORD=${SERVICE_PASSWORD}
@@ -114,9 +114,13 @@ docker-compose up -d
 # 等待服务就绪（最多 60 秒）
 echo "等待依赖服务启动..."
 for i in {1..60}; do
-  docker exec mysql mysql -uroot -p${SERVICE_PASSWORD} -e "SHOW DATABASES;" >/dev/null 2>&1 && break
-  docker exec elasticsearch curl -s http://localhost:9200/_cluster/health | grep -q "status\":\"green\"" && break
-  sleep 1
+    if docker ps -f "name=mysql" --format "{{.Status}}" | grep -q "Up"; then
+        docker exec mysql mysql -uroot -p${SERVICE_PASSWORD} -e "SHOW DATABASES;" >/dev/null 2>&1 && break
+    fi
+    if docker ps -f "name=elasticsearch" --format "{{.Status}}" | grep -q "Up"; then
+        curl -s -u elastic:${SERVICE_PASSWORD} http://localhost:9200/_cluster/health | grep -q "status\":\"green\"" && break
+    fi
+    sleep 1
 done
 
 # ==================================
@@ -165,3 +169,4 @@ echo "   cp ${PROJECT_DIR}/.env ragflow/docker/."
 echo "   bash ragflow/docker/launch_backend_service.sh"
 echo "4. 启动前端服务："
 echo "   cd ragflow/web && npm install && npm run dev"
+    
